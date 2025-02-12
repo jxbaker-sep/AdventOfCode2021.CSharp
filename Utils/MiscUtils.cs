@@ -6,6 +6,10 @@ public static class MiscUtils
     for(long i = start; i <= stop; i++) yield return i;
   }
 
+  public static IEnumerable<long> LongRange(long start, long count) {
+    for(long i = 0; i < count; i++) yield return start + i;
+  }
+
   public static long? BinarySearch(long maxValue, Func<long, bool> action) {
     long? knownMin = null;
     long? knownMax = null;
