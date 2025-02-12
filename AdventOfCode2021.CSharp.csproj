@@ -21,6 +21,8 @@
 
   <ItemGroup>
     <Using Include="Xunit" />
+    <Using Include="System.Collections.Generic" />
+    <Using Include="System.Linq" />
   </ItemGroup>
 
 </Project>
