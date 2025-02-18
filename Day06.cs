@@ -21,21 +21,17 @@ public class Day06
 
   private static List<long> Breed(List<long> fishes, int iterations)
   {
-    foreach (var _ in Enumerable.Range(0, iterations))
-    {
-      fishes = Enumerable.Range(0, 9).Select(index =>
+    return Enumerable.Range(0, iterations)
+      .Aggregate(fishes, (current, _) => Enumerable.Range(0, 9).Select(index =>
       {
         var result = index switch
         {
-          6 => fishes[index + 1] + fishes[0],
-          < 8 => fishes[index + 1],
-          _ => fishes[0]
+          6 => current[index + 1] + current[0],
+          < 8 => current[index + 1],
+          _ => current[0]
         };
         return result;
-      }).ToList();
-    }
-
-    return fishes;
+      }).ToList());
   }
 
   private static List<long> Convert(string input)
