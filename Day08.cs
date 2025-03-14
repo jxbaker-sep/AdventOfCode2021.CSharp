@@ -50,30 +50,33 @@ public class Day08
     // Length 5: 2, 3, 5
     // Length 6: 0, 6, 9
 
+    // pattern '3' is the only length 5 pattern that contains every segment also in '7'
     var p3 = patterns.Single(it => it.Length == 5 && it.Intersect(p7).Count() == 3).ToCharArray();
     
-    var a = p7.Except(p1).Single();
-    // segment f is used in every pattern but 1.
-    char f = 'a';
+    // segment f is used in every pattern but '2'
     List<char> p2 = [];
-    for (f = 'a'; f <= 'g'; f++) {
+    for (var f = 'a'; f <= 'g'; f++) {
       if (patterns.Count(p => p.Contains(f)) == 9) {
         p2 = [.. patterns.Single(it => !it.Contains(f))];
         break;
       }
     }
 
+    // then pattern '5' is the length 5 pattern which is not '2' or '3'
     var p5 = patterns.Single(it => it.Length == 5 && it.Intersect(p2).Count() != 5 && it.Intersect(p3).Count() != 5).ToCharArray();
 
-    var c = p1.Except([f]).Single();
-
+    // pattern '6' is the only length 6 pattern which does not contain both segments in '1'
     var p6 = patterns.Single(it => it.Length == 6 && it.Intersect(p1).Count() == 1).ToCharArray();
 
+    // segments b and e are the segments from '8' minus the segments in '3'
     var be = p8.Except(p3).ToList();
 
+    // patterns '0' and '9' are the length 6 segments that are not '6'
     var _09 = patterns.Where(it => it.Length == 6 && it.Union(p6).Count() != 6).ToList();
 
+    // pattern '9' does not use both segments b and e
     var p9 = _09.Single(it => it.Intersect(be).Count() != 2);
+    // then '0' is the remaining pattern
     var p0 = _09.Except([p9]).Single();
 
     return new Dictionary<string, long>{
