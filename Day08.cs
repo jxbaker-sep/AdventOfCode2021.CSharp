@@ -14,7 +14,7 @@ public class Day08
   const int Length8 = 7;
   [Theory]
   [InlineData("Day08.Sample", 26)]
-  [InlineData("Day08", 0)]
+  [InlineData("Day08", 303)]
   public void Part1(string file, long expected)
   {
     var items = Convert(AoCLoader.LoadLines(file));
