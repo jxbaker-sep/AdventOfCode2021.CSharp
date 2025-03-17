@@ -1,7 +1,5 @@
 using AdventOfCode2021.CSharp.Utils;
 using FluentAssertions;
-using Parser;
-using Utils;
 
 namespace AdventOfCode2021.CSharp;
 
@@ -22,19 +20,19 @@ public class Day11
     {
       grid = grid.ToDictionary(it => it.Key, it => it.Value + 1);
 
-      HashSet<Point> closed = [];
-      while (grid.Any(it => it.Value > 9 && !closed.Contains(it.Key)))
+      HashSet<Point> flashed = [];
+      while (grid.Any(it => it.Value > 9 && !flashed.Contains(it.Key)))
       {
-        var current = grid.First(it => it.Value > 9 && !closed.Contains(it.Key));
-        closed.Add(current.Key);
+        var current = grid.First(it => it.Value > 9 && !flashed.Contains(it.Key));
+        flashed.Add(current.Key);
         if (i <= 100) totalFlashes += 1;
         foreach(var n in current.Key.CompassRoseNeighbors())
         {
           if (grid.ContainsKey(n)) grid[n] += 1;
         }
       }
-      foreach(var pt in closed) grid[pt] = 0;
-      if (closed.Count == grid.Count && firstAllFlashed == null) firstAllFlashed = i;
+      foreach(var pt in flashed) grid[pt] = 0;
+      if (flashed.Count == grid.Count) firstAllFlashed = i;
     }
 
     totalFlashes.Should().Be(expected);
