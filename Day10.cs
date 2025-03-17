@@ -1,9 +1,6 @@
 using AdventOfCode2021.CSharp.Utils;
 using FluentAssertions;
-using Microsoft.VisualBasic;
 using Parser;
-using Utils;
-using P = Parser.ParserBuiltins;
 
 namespace AdventOfCode2021.CSharp;
 
@@ -16,7 +13,7 @@ public class Day10
   public void Part1(string file, long expected)
   {
     var lines = AoCLoader.LoadLines(file);
-    lines.Select(Score).Sum().Should().Be(expected);
+    lines.Select(Score1).Sum().Should().Be(expected);
   }
 
   [Theory]
@@ -25,7 +22,7 @@ public class Day10
   public void Part2(string file, long expected)
   {
     var lines = AoCLoader.LoadLines(file);
-    var x = lines.Where(it => Score(it) == 0).Select(Score2).OrderBy(it=>it).ToList();
+    var x = lines.Where(it => Score1(it) == 0).Select(Score2).OrderBy(it=>it).ToList();
     x[x.Count / 2].Should().Be(expected);
   }
 
@@ -43,10 +40,10 @@ public class Day10
 
   public void Sanity(string input, long expected)
   {
-    Score(input).Should().Be(expected);
+    Score1(input).Should().Be(expected);
   }
 
-  private long Score(string input)
+  private long Score1(string input)
   {
     Dictionary<char, long> score = new()
     {
@@ -78,7 +75,6 @@ public class Day10
         {
           return score[c];
         }
-
       }
       else throw new ApplicationException();
     }

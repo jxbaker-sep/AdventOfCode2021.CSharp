@@ -1,4 +1,3 @@
-using System.Numerics;
 using AdventOfCode2021.CSharp.Utils;
 using FluentAssertions;
 using Parser;

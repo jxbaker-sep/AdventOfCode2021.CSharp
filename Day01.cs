@@ -2,10 +2,8 @@
 using AdventOfCode2021.CSharp.Utils;
 using FluentAssertions;
 using Parser;
-using Xunit;
 using Utils;
 using P = Parser.ParserBuiltins;
-using System.Collections.Generic;
 
 namespace AdventOfCode2021.CSharp;
 
