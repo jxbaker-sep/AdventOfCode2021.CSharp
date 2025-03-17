@@ -20,6 +20,16 @@ public class Day10
   }
 
   [Theory]
+  [InlineData("Day10.Sample", 288957)]
+  [InlineData("Day10", 3241238967)]
+  public void Part2(string file, long expected)
+  {
+    var lines = AoCLoader.LoadLines(file);
+    var x = lines.Where(it => Score(it) == 0).Select(Score2).OrderBy(it=>it).ToList();
+    x[x.Count / 2].Should().Be(expected);
+  }
+
+  [Theory]
   [InlineData("()", 0)]
   [InlineData("(()", 0)]
   [InlineData("[]", 0)]
@@ -73,5 +83,44 @@ public class Day10
       else throw new ApplicationException();
     }
     return 0;
+  }
+
+  private long Score2(string input)
+  {
+    Dictionary<char, long> score = new()
+    {
+      ['('] = 1,
+      ['['] = 2,
+      ['{'] = 3,
+      ['<'] = 4,
+    };
+    Dictionary<char, char> match = new()
+    {
+      ['('] = ')',
+      ['['] = ']',
+      ['{'] = '}',
+      ['<'] = '>',
+    };
+    var opener = match.Keys.ToList();
+    var closer = match.Values.ToList();
+    Stack<char> stack = [];
+    foreach (var c in input)
+    {
+      if (opener.Contains(c))
+      {
+        stack.Push(c);
+      }
+      else if (closer.Contains(c))
+      {
+        var x = stack.Pop();
+        if (match[x] != c)
+        {
+          throw new ApplicationException("Really should match at this point.");
+        }
+      }
+      else throw new ApplicationException($"Unknown character: {c}");
+    }
+
+    return stack.Aggregate(0L, (accum, current) => accum * 5 + score[current]);
   }
 }
