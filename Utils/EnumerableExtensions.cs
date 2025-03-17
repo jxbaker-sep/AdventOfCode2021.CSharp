@@ -1,3 +1,5 @@
+using Xunit.Sdk;
+
 namespace Utils;
 
 public static class EnumerableExtensions
@@ -16,6 +18,12 @@ public static class EnumerableExtensions
       if (q.Count > size) q.Dequeue();
       if (q.Count == size) yield return q.ToList();
     }
+  }
+
+  public static T? FirstOrNull<T>(this IEnumerable<T> self, Func<T, bool> filter) where T:struct
+  {
+    foreach(var it in self.Where(filter)) return it;
+    return null;
   }
 
   public static IEnumerable<(T First, T Second)> Pairs<T>(this List<T> self)
