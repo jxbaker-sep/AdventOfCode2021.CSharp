@@ -26,6 +26,15 @@ public static class ParserBuiltins
 
   public static readonly Parser<Void> EndOfLine = EndOfInput | String("\n").Void();
 
+  public static Parser<char> Char(char c)
+  {
+    return Parser.From((ca, i) =>
+    {
+      if (ca.Length >= i + 1 && ca[i] == c) return ParseResult.From(c, ca, i + 1);
+      return new ParseFailure<char>($"expected char {c}", ca, i);
+    });
+  }
+
   public static Parser<string> String(string s)
   {
     return Parser.From((c, i) =>
