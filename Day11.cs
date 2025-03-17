@@ -21,14 +21,19 @@ public class Day11
     {
       grid = grid.ToDictionary(it => it.Key, it => it.Value + 1);
 
-      HashSet<Point> flashed = [];
-      while (grid.FirstOrNull(it => it.Value > 9 && !flashed.Contains(it.Key)) is {} current)
+      Queue<Point> flashing = grid.Where(it => it.Value > 9).Select(it=>it.Key).ToQueue();
+
+      HashSet<Point> flashed = [.. flashing];
+      while (flashing.TryDequeue(out var current))
       {
-        flashed.Add(current.Key);
         if (i <= 100) totalFlashes += 1;
-        foreach(var n in current.Key.CompassRoseNeighbors())
+        foreach(var n in current.CompassRoseNeighbors())
         {
-          if (grid.ContainsKey(n)) grid[n] += 1;
+          if (grid.TryGetValue(n, out var nv)) {
+            nv += 1;
+            grid[n] = nv;
+            if (nv > 9 && flashed.Add(n)) flashing.Enqueue(n);
+          }
         }
       }
       foreach(var pt in flashed) grid[pt] = 0;
