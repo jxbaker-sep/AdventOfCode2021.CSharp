@@ -160,7 +160,7 @@ public class ParserTests
         var anyJsonObject = P.Defer<P.Void>();
         var jsonInt = P.Long.Trim().Void();
         var jsonFloat = P.Sequence(P.Long.Before("."), P.Long).Trim().Void();
-        var jsonBool = P.Choice("true", "false").Trim().Void();
+        var jsonBool = P.Enum("true", "false").Trim().Void();
         var stringElement = P.Any.After("\\") | P.Any.Where(it => it != '\"');
         var jsonString = stringElement.Star().Between("\"", "\"").Trim().Void();
         var jsonKeyValue = P.Sequence(jsonString.Before(":"), anyJsonObject);
@@ -296,7 +296,7 @@ public class ParserTests
 
         var parser = P.Sequence(
             P.String("PO"), 
-            P.Choice("#", "-").Optional().Trim(),
+            P.Enum("#", "-").Optional().Trim(),
             P.Digit.Range(2, 2),
             P.String("-").Optional().Trim(),
             P.Digit.Range(4, 4))

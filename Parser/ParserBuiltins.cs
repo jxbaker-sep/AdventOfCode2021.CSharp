@@ -73,7 +73,7 @@ public static class ParserBuiltins
   }
 
 
-  public static Parser<string> Choice(params string[] choices)
+  public static Parser<string> Enum(params string[] choices)
   {
     return choices.Select(it => String(it)).Aggregate((a, b) => a | b);
   }
