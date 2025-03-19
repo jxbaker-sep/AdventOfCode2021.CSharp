@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Net.Mail;
 using AdventOfCode2021.CSharp.Utils;
 using FluentAssertions;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Parser;
 using Utils;
 using P = Parser.ParserBuiltins;
@@ -41,30 +42,55 @@ public class Day14
 
   [Theory]
   [InlineData("Day14.Sample", 2188189693529)]
-  [InlineData("Day14", 0)]
+  [InlineData("Day14", 3459174981021)]
   public void Part2(string file, long expected)
   {
     var (template, rules) = Convert(AoCLoader.LoadLines(file));
 
-    var polymer = new LinkedList<char>(template.ToCharArray());
-
-    foreach(var _ in Enumerable.Range(0,10)) {
-      var current = polymer.First!;
-      while (current != null) {
-        var next = current.Next;
-        if (next == null) break;
-        if (rules.TryGetValue((current.Value, next.Value), out var insert)) {
-          polymer.AddAfter(current, insert);
-        }
-        current = next;
-      }
-    }
-
-    var groups = polymer.GroupToCounts();
+    var groups = GetCounts(template, 40, rules);
     var max = groups.Values.Max();
     var min = groups.Values.Min();
 
     (max - min).Should().Be(expected);
+  }
+
+  Dictionary<(string, int), Dictionary<char, long>> Cache = [];
+  Dictionary<char, long> GetCounts(string polymer, int count, Dictionary<(char, char), char> rules) {
+    if (Cache.TryGetValue((polymer, count), out var found)) return found;
+    if (count == 0 || polymer.Length <= 1) {
+      var result2 = polymer.ToCharArray().GroupToCounts();
+      Cache[(polymer, count)] = result2;
+      return result2;
+    }
+    if (polymer.Length == 2 && count == 1) {
+      var result2 = polymer.ToCharArray().GroupToCounts();
+      if (rules.TryGetValue((polymer[0], polymer[1]), out var insert2)) {
+        result2[insert2] = result2.GetValueOrDefault(insert2) + 1;
+      }
+      Cache[(polymer, count)] = result2;
+      return result2;
+    }
+    Dictionary<char, long> result = []; 
+    for(var i = 0; i < polymer.Length - 1; i++) {
+      if (rules.TryGetValue((polymer[i], polymer[i+1]), out var insert)) {
+        var d3 = GetCounts($"{polymer[i]}{insert}{polymer[i+1]}", count - 1, rules);
+        Merge(result, d3);
+        if (i != polymer.Length - 2) {
+          result[polymer[i+1]] -= 1;
+        }
+      }
+      else {
+        result[polymer[i]] = result.GetValueOrDefault(polymer[i]) + 1;
+        if (i == polymer.Length - 2) result[polymer[i+1]] = result.GetValueOrDefault(polymer[i+1]) + 1;
+      }
+    }
+
+    Cache[(polymer, count)] = result;
+    return result;
+  }
+
+  void Merge(Dictionary<char, long> result, Dictionary<char, long> d2) {
+    foreach(var (x,y) in d2) result[x] = result.GetValueOrDefault(x) + y;
   }
 
   private static (string Template, Dictionary<(char, char), char> Rules) Convert(List<string> input)
