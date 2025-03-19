@@ -7,7 +7,7 @@ namespace AdventOfCode2021.CSharp;
 
 public class Day13
 {
-  
+
   [Theory]
   [InlineData("Day13.Sample", 17)]
   [InlineData("Day13", 781)]
@@ -16,31 +16,41 @@ public class Day13
     var world = Convert(AoCLoader.LoadFile(file));
 
     DoFold(world.Points, world.Folds[0]).Count.Should().Be(expected);
+
+    var result = world.Folds.Aggregate(world.Points, DoFold);
+
+    var minx = result.Min(it => it.X);
+    var miny = result.Min(it => it.Y);
+    var maxx = result.Max(it => it.X);
+    var maxy = result.Max(it => it.Y);
+    for (var y = miny; y <= maxy; y++)
+    {
+      for (var x = minx; x <= maxx; x++)
+      {
+        Console.Write(result.Contains(new(y,x)) ? '#' : ' ');
+      }
+      Console.WriteLine();
+    }
   }
 
   static List<Point> DoFold(List<Point> points, Fold fold)
   {
-    if (fold.Axis == "y") {
-      var max = points.Max(it => it.Y);
-      (fold.Index * 2).Should().Be(max);
-      return points.Select(it => {
-        if (it.Y > fold.Index) {
-          return new Point(max - it.Y, it.X);
-        }
-        return it;
-      }).Distinct().ToList();
+    Func<Point, long> access = it => it.Y;
+    Func<Point, Point> shift = it => new(fold.Index * 2 - it.Y, it.X);
+
+    if (fold.Axis == "x") {
+      access = it => it.X;
+      shift = it => new(it.Y, fold.Index * 2 - it.X);
     }
-    else
+
+    return points.Select(it =>
     {
-      var max = points.Max(it => it.X);
-      (fold.Index * 2).Should().Be(max);
-      return points.Select(it => {
-        if (it.X > fold.Index) {
-          return new Point(it.Y, max - it.X);
-        }
-        return it;
-      }).Distinct().ToList();
-    }
+      if (access(it) > fold.Index)
+      {
+        return shift(it);
+      }
+      return it;
+    }).Distinct().ToList();
   }
 
   public record Fold(string Axis, long Index);
@@ -55,4 +65,4 @@ public class Day13
 
     return new(points, folds);
   }
-} 
+}
