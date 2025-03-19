@@ -43,19 +43,11 @@ public class Day14
   Dictionary<(string, int), Dictionary<char, long>> Cache = [];
   Dictionary<char, long> GetCounts(string polymer, int count, Dictionary<(char, char), char> rules) {
     if (Cache.TryGetValue((polymer, count), out var found)) return found;
-    if (count == 0 || polymer.Length <= 1) {
+    if (count == 0) {
       var result2 = polymer.ToCharArray().GroupToCounts();
       Cache[(polymer, count)] = result2;
       return result2;
     }
-    // if (polymer.Length == 2 && count == 1) {
-    //   var result2 = polymer.ToCharArray().GroupToCounts();
-    //   if (rules.TryGetValue((polymer[0], polymer[1]), out var insert2)) {
-    //     result2[insert2] = result2.GetValueOrDefault(insert2) + 1;
-    //   }
-    //   Cache[(polymer, count)] = result2;
-    //   return result2;
-    // }
     Dictionary<char, long> result = []; 
     for(var i = 0; i < polymer.Length - 1; i++) {
       if (rules.TryGetValue((polymer[i], polymer[i+1]), out var insert)) {
