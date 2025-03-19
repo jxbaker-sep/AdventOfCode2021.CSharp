@@ -19,21 +19,7 @@ public class Day14
   {
     var (template, rules) = Convert(AoCLoader.LoadLines(file));
 
-    var polymer = new LinkedList<char>(template.ToCharArray());
-
-    foreach(var _ in Enumerable.Range(0,10)) {
-      var current = polymer.First!;
-      while (current != null) {
-        var next = current.Next;
-        if (next == null) break;
-        if (rules.TryGetValue((current.Value, next.Value), out var insert)) {
-          polymer.AddAfter(current, insert);
-        }
-        current = next;
-      }
-    }
-
-    var groups = polymer.GroupToCounts();
+    var groups = GetCounts(template, 10, rules);
     var max = groups.Values.Max();
     var min = groups.Values.Min();
 
@@ -75,12 +61,14 @@ public class Day14
       if (rules.TryGetValue((polymer[i], polymer[i+1]), out var insert)) {
         var d3 = GetCounts($"{polymer[i]}{insert}{polymer[i+1]}", count - 1, rules);
         Merge(result, d3);
+        // remove the second character of the pair because it will be counted in the next unless it is also the last element
         if (i != polymer.Length - 2) {
           result[polymer[i+1]] -= 1;
         }
       }
       else {
         result[polymer[i]] = result.GetValueOrDefault(polymer[i]) + 1;
+        // the second element of the pair will be counted in the next pair unless it is also the last element
         if (i == polymer.Length - 2) result[polymer[i+1]] = result.GetValueOrDefault(polymer[i+1]) + 1;
       }
     }
