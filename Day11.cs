@@ -29,7 +29,7 @@ public class Day11
         if (i <= 100) totalFlashes += 1;
         foreach(var n in current.CompassRoseNeighbors())
         {
-          if (grid.TryGet(n, out var nv)) {
+          if (grid.TryGetValue(n, out var nv)) {
             nv += 1;
             grid[n] = nv;
             if (nv > 9 && flashed.Add(n)) readyToFlash.Enqueue(n);

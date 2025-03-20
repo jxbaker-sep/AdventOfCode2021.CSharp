@@ -22,7 +22,7 @@ public class Grid<T>
 
   public bool Contains(Point p) => 0 <= p.Y && p.Y < Height && 0 <= p.X && p.X < Width;
 
-  public bool TryGet(Point p, out T output)
+  public bool TryGetValue(Point p, out T output)
   {
     if (Contains(p))
     {

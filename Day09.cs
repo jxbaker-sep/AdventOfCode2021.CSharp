@@ -15,7 +15,7 @@ public class Day09
   {
     var grid = Convert(AoCLoader.LoadLines(file));
 
-    grid.Items().Where(it => !it.Key.CardinalNeighbors().Any(n => grid.TryGet(n, out var temp) && temp <= it.Value))
+    grid.Items().Where(it => !it.Key.CardinalNeighbors().Any(n => grid.TryGetValue(n, out var temp) && temp <= it.Value))
       .Sum(it => it.Value + 1)
       .Should().Be(expected);
   }
@@ -27,7 +27,7 @@ public class Day09
   {
     var grid = Convert(AoCLoader.LoadLines(file));
 
-    var lowpoints = grid.Items().Where(it => !it.Key.CardinalNeighbors().Any(n => grid.TryGet(n, out var temp) && temp <= it.Value));
+    var lowpoints = grid.Items().Where(it => !it.Key.CardinalNeighbors().Any(n => grid.TryGetValue(n, out var temp) && temp <= it.Value));
 
     List<long> basinSizes = [];
     foreach(var lp in lowpoints)
@@ -40,7 +40,7 @@ public class Day09
       {
         foreach(var n in current.Item1.CardinalNeighbors())
         {
-          if (!grid.TryGet(n, out var nv)) continue;
+          if (!grid.TryGetValue(n, out var nv)) continue;
           if (nv == 9) continue;
           if (!closed.Add(n)) continue;
           open.Enqueue((n, nv));
