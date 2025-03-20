@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Net.Mail;
+using System.Runtime.Serialization;
 using AdventOfCode2021.CSharp.Utils;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
@@ -20,6 +21,31 @@ public class Day15
     var grid = Convert(AoCLoader.LoadLines(file));
 
     FindLeastRiskyPath(grid).Should().Be(expected);
+  }
+
+  [Theory]
+  [InlineData("Day15.Sample", 315)]
+  [InlineData("Day15", 2821)]
+  public void Part2(string file, long expected)
+  {
+    var grid = Convert(AoCLoader.LoadLines(file));
+
+    var biggrid = new Grid<long>(MiscUtils.LongRange(0, grid.Height * 5).Select(_ => MiscUtils.LongRange(0, grid.Width * 5)));
+
+    foreach (var y in Enumerable.Range(0, 5))
+    {
+      foreach(var x in Enumerable.Range(0, 5))
+      {
+        foreach(var (Key, Value) in grid.Items())
+        {
+          long value = Value + y + x;
+          if (value > 9) value -= 9;
+          biggrid[new Point(x * grid.Width + Key.X, y * grid.Height + Key.Y)] = value;
+        }
+      }
+    }
+
+    FindLeastRiskyPath(biggrid).Should().Be(expected);
   }
 
   static long FindLeastRiskyPath(Grid<long> grid)
