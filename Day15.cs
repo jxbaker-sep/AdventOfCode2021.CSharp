@@ -14,7 +14,7 @@ public class Day15
 
   [Theory]
   [InlineData("Day15.Sample", 40)]
-  [InlineData("Day15", 0)]
+  [InlineData("Day15", 487)]
   public void Part1(string file, long expected)
   {
     var grid = Convert(AoCLoader.LoadLines(file));
@@ -25,22 +25,25 @@ public class Day15
   static long FindLeastRiskyPath(Grid<long> grid)
   {
     var goal = new Point(grid.Width - 1, grid.Height - 1);
-    PriorityQueue<(Point Point, List<Point> Path, long Risk)> open = new(it => it.Risk + it.Point.ManhattanDistance(goal));
-    open.Enqueue((Point.Zero, [Point.Zero], 0));
+    Dictionary<Point, long> closed = [];
+    closed[Point.Zero] = 0;
 
+    Queue<(Point Point, long Risk)> open = [];
+    open.Enqueue((Point.Zero, 0));
 
     while (open.TryDequeue(out var current))
     {
-      foreach(var n in current.Point.CardinalNeighbors())
-      {
-        if (current.Path.Contains(n)) continue;
-        if (!grid.TryGetValue(n, out var risk)) continue;
-        if (n == goal) return current.Risk + risk;
-        open.Enqueue((n, [..current.Path, n], current.Risk + risk));
+      if (closed.TryGetValue(current.Point, out var preexisting) && preexisting < current.Risk) continue;
+      foreach(var n in current.Point.CardinalNeighbors()) {
+        if (grid.TryGetValue(n, out var risk)) {
+          if (closed.TryGetValue(n, out var existing) && existing <= current.Risk + risk) continue;
+          closed[n] = current.Risk + risk;
+          open.Enqueue((n, current.Risk + risk));
+        }
       }
     }
 
-    throw new ApplicationException();
+    return closed[goal];
   }
 
   private static Grid<long> Convert(List<string> input)
