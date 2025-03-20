@@ -19,9 +19,9 @@ public class Day11
 
     for(long i = 1; firstAllFlashed == null; i++)
     {
-      grid = grid.ToDictionary(it => it.Key, it => it.Value + 1);
+      foreach(var point in grid.Points()) grid[point] += 1;
 
-      Queue<Point> readyToFlash = grid.Where(it => it.Value > 9).Select(it=>it.Key).ToQueue();
+      Queue<Point> readyToFlash = grid.Items().Where(it => it.Value > 9).Select(it=>it.Key).ToQueue();
 
       HashSet<Point> flashed = [.. readyToFlash];
       while (readyToFlash.TryDequeue(out var current))
@@ -29,7 +29,7 @@ public class Day11
         if (i <= 100) totalFlashes += 1;
         foreach(var n in current.CompassRoseNeighbors())
         {
-          if (grid.TryGetValue(n, out var nv)) {
+          if (grid.TryGet(n, out var nv)) {
             nv += 1;
             grid[n] = nv;
             if (nv > 9 && flashed.Add(n)) readyToFlash.Enqueue(n);
@@ -44,8 +44,8 @@ public class Day11
     firstAllFlashed.Should().Be(expected2);
   }
 
-  private static Dictionary<Point, long> Convert(List<string> input)
+  private static Grid<long> Convert(List<string> input)
   {
-    return input.Gridify().ToDictionary(it => it.Key, it => (long)(it.Value - '0'));
+    return input.Gridify(it => (long)(it - '0'));
   }
 } 
