@@ -29,7 +29,7 @@ public class Day02
     foreach(var v in data)
     {
       if (v.Y != 0) { aim += v.Y; continue; }
-      pos += new Vector(v.X * aim, v.X);
+      pos += new Vector(v.X, v.X * aim);
     }
     (pos.X * pos.Y).Should().Be(expected);
   }
@@ -37,9 +37,9 @@ public class Day02
 
   private static List<Vector> Convert(List<string> list)
   {
-    var fwd = P.Format("forward {}", P.Long).Select(it => new Vector(0, it));
-    var down = P.Format("down {}", P.Long).Select(it => new Vector(it, 0));
-    var up = P.Format("up {}", P.Long).Select(it => new Vector(-it, 0));
+    var fwd = P.Format("forward {}", P.Long).Select(it => new Vector(it, 0));
+    var down = P.Format("down {}", P.Long).Select(it => new Vector(0, it));
+    var up = P.Format("up {}", P.Long).Select(it => new Vector(0, -it));
 
     return (fwd | down | up).ParseMany(list);
   }

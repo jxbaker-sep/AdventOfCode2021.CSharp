@@ -38,7 +38,7 @@ public class Day05
 
   private IEnumerable<object> Open((Point, Point) points)
   {
-    var vector = new Vector(Math.Sign(points.Item2.Y - points.Item1.Y), Math.Sign(points.Item2.X - points.Item1.X));
+    var vector = new Vector(Math.Sign(points.Item2.X - points.Item1.X), Math.Sign(points.Item2.Y - points.Item1.Y));
     var current = points.Item1;
     while (true)
     {
@@ -51,7 +51,7 @@ public class Day05
   private static List<(Point, Point)> Convert(List<string> list)
   {
     return P.Format("{},{} -> {},{}", P.Long, P.Long, P.Long, P.Long)
-      .Select(it => (new Point(it.Second, it.First), new Point(it.Fourth, it.Third)))
+      .Select(it => (new Point(it.First, it.Second), new Point(it.Third, it.Fourth)))
       .ParseMany(list);
   }
 }

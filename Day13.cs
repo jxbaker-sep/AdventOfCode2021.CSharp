@@ -27,7 +27,7 @@ public class Day13
     {
       for (var x = minx; x <= maxx; x++)
       {
-        Console.Write(result.Contains(new(y,x)) ? '#' : ' ');
+        Console.Write(result.Contains(new(x,y)) ? '#' : ' ');
       }
       Console.WriteLine();
     }
@@ -36,11 +36,11 @@ public class Day13
   static List<Point> DoFold(List<Point> points, Fold fold)
   {
     Func<Point, long> access = it => it.Y;
-    Func<Point, Point> shift = it => new(fold.Index * 2 - it.Y, it.X);
+    Func<Point, Point> shift = it => new(it.X, fold.Index * 2 - it.Y);
 
     if (fold.Axis == "x") {
       access = it => it.X;
-      shift = it => new(it.Y, fold.Index * 2 - it.X);
+      shift = it => new(fold.Index * 2 - it.X, it.Y);
     }
 
     return points.Select(it =>
@@ -60,7 +60,7 @@ public class Day13
   {
     var pps = input.Split("\n\n").Select(it => it.Split("\n").ToList()).ToList();
 
-    var points = P.Format("{},{}", P.Long, P.Long).Select(it => new Point(it.Second, it.First)).ParseMany(pps[0]);
+    var points = P.Format("{},{}", P.Long, P.Long).Select(it => new Point(it.First, it.Second)).ParseMany(pps[0]);
     var folds = P.Format("fold along {}={}", P.Enum("x", "y"), P.Long).Select(it => new Fold(it.First, it.Second)).ParseMany(pps[1]);
 
     return new(points, folds);

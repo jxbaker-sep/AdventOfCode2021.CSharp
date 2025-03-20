@@ -6,7 +6,7 @@ public static class StringExtensions
         .Select(it => it.Trim()).ToList();
 
     public static Dictionary<Point, char> Gridify(this List<string> self) =>
-        self.SelectMany((line, row) => line.Select((c, col) => (new Point(row, col), c)))
+        self.SelectMany((line, row) => line.Select((c, col) => (new Point(col, row), c)))
           .ToDictionary(it => it.Item1, it => it.c);
 
 
