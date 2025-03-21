@@ -24,12 +24,16 @@ public class Day16
   [Theory]
   [InlineData("38006F45291200", 9, 30)]
   [InlineData("EE00D40C823060", 14, 6)]
+  [InlineData("8A004A801A8002F478", 16, -1)]
+  [InlineData("620080001611562C8802118E34", 12, -1)]
+  [InlineData("C0015000016115A2E0802F182340", 23, -1)]
+  [InlineData("A0016C880162017C3686B18A3D4780", 31, -1)]
   public void SanityOperators(string input, long expected1, long expected2)
   {
     var s = ToBinary(input);
     var (packet, _) = ParsePacket(s);
     SumVersions(packet).Should().Be(expected1);
-    SumValue(packet).Should().Be(expected2);
+    if (expected2 != -1) SumValue(packet).Should().Be(expected2);
   }
 
   record Packet(long Version, long ID, long Value, List<Packet> Subpackets);
