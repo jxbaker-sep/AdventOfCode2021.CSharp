@@ -23,10 +23,11 @@ public class Day16
 
   [Theory]
   [InlineData("38006F45291200", 9, 30)]
+  [InlineData("EE00D40C823060", 14, 6)]
   public void SanityOperators(string input, long expected1, long expected2)
   {
     var s = ToBinary(input);
-    var (packet, remainder) = ParsePacket(s);
+    var (packet, _) = ParsePacket(s);
     SumVersions(packet).Should().Be(expected1);
     SumValue(packet).Should().Be(expected2);
   }
@@ -49,13 +50,14 @@ public class Day16
       while (!done)
       {
         done = s[n] == '0';
-        var hex = DecodeBinary(s, n+1, 4);
+        var hex = DecodeBinary(s, n + 1, 4);
         value = (value << 4) + hex;
         n += 5;
       }
       return (new Packet(version, id, value, []), s[n..]);
     }
-    else {
+    else
+    {
       // operator packet
       var lengthTypeId = DecodeBinary(s, 6, 1);
       var packet = new Packet(version, id, 0, []);
@@ -72,13 +74,24 @@ public class Day16
         var n = 22 + tlength;
         return (packet, s[n..]);
       }
-      else throw new ApplicationException();
+      else
+      {
+        var tlength = (int)DecodeBinary(s, 7, 11);
+        var sub = s[18..];
+        while (tlength-- > 0)
+        {
+          var (p, r) = ParsePacket(sub);
+          packet.Subpackets.Add(p);
+          sub = r;
+        }
+        return (packet, sub);
+      }
     }
   }
 
   static long DecodeBinary(string s, int start, int length)
   {
-    return s[start..(start+length)].Select(it => it - '0')
+    return s[start..(start + length)].Select(it => it - '0')
       .Aggregate(0, (accum, current) => accum * 2 + current);
   }
 
