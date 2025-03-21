@@ -1,12 +1,6 @@
-using System.ComponentModel;
-using System.Net.Mail;
-using System.Runtime.Serialization;
 using AdventOfCode2021.CSharp.Utils;
 using FluentAssertions;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Parser;
-using Utils;
-using P = Parser.ParserBuiltins;
 
 namespace AdventOfCode2021.CSharp;
 

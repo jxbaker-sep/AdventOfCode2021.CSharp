@@ -13,11 +13,21 @@ namespace AdventOfCode2021.CSharp;
 public class Day16
 {
   [Theory]
+  [InlineData("Day16", 963)]
+  public void Part1(string file, long expected)
+  {
+    var input = AoCLoader.LoadLines(file).Single();
+
+    var (packet, _) = ParsePacket(ToBinary(input));
+    SumVersions(packet).Should().Be(expected);
+  }
+
+  [Theory]
   [InlineData("D2FE28", 2021)]
   public void SanityValues(string input, long expected)
   {
     var s = ToBinary(input);
-    var (packet, remainder) = ParsePacket(s);
+    var (packet, _) = ParsePacket(s);
     packet.Value.Should().Be(expected);
   }
 
@@ -28,12 +38,12 @@ public class Day16
   [InlineData("620080001611562C8802118E34", 12, -1)]
   [InlineData("C0015000016115A2E0802F182340", 23, -1)]
   [InlineData("A0016C880162017C3686B18A3D4780", 31, -1)]
-  public void SanityOperators(string input, long expected1, long expected2)
+  public void SanityOperators(string input, long expectedVersionSum, long expectedValueSum)
   {
     var s = ToBinary(input);
     var (packet, _) = ParsePacket(s);
-    SumVersions(packet).Should().Be(expected1);
-    if (expected2 != -1) SumValue(packet).Should().Be(expected2);
+    SumVersions(packet).Should().Be(expectedVersionSum);
+    if (expectedValueSum != -1) SumValue(packet).Should().Be(expectedValueSum);
   }
 
   record Packet(long Version, long ID, long Value, List<Packet> Subpackets);
