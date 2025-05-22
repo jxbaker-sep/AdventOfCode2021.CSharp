@@ -37,7 +37,7 @@ public class Day17
     for (var startdy = Math.Abs(targetArea.Y2); startdy > 0 && !found ; startdy--)
     {
       long y = 0;
-      var t = startdy * 2 + 1; // when velocity crosses 0 again
+      var t = startdy * 2 + 2; // when velocity crosses 0 again
       long dy = -(startdy+1); // falling
       while (y >= targetArea.Y2 && !found)
       {
