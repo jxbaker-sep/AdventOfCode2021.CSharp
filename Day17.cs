@@ -33,18 +33,19 @@ public class Day17
     }
 
     long maxY = 0;
-
-    for (var startdy = 0; startdy <= Math.Abs(targetArea.Y2); startdy++)
+    bool found = false;
+    for (var startdy = Math.Abs(targetArea.Y2); startdy > 0 && !found ; startdy--)
     {
       long y = 0;
       var t = startdy * 2 + 1; // when velocity crosses 0 again
       long dy = -(startdy+1); // falling
-      while (y >= targetArea.Y2)
+      while (y >= targetArea.Y2 && !found)
       {
         y += dy;
         if (targetArea.Y1 >= y && y >= targetArea.Y2) {
           if (xts.Contains(t) || t >= infiniT) {
             maxY = Math.Max(MathUtils.Triangle(startdy), maxY);
+            found = true;
             break;
           }
         }
