@@ -3,6 +3,8 @@ namespace AdventOfCode2021.CSharp.Utils;
 public static class MathUtils
 {
   public static long Triangle(long x) => x * (x + 1) / 2;
+  
+  public static long TriangleAllowNegatives(long x) => x >= 0 ? Triangle(x) : -Triangle(Math.Abs(x));
 
   public static long LongPow(long b, long power) {
     long result = 1;
