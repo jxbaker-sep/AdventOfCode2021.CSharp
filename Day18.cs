@@ -7,6 +7,20 @@ namespace AdventOfCode2021.CSharp;
 public partial class Day18
 {
   [Theory]
+  [InlineData("Day18.Sample.5", 4140)]
+  [InlineData("Day18", 0)]
+  public void Part1(string file, long expected)
+  {
+    AoCLoader.LoadLines(file).Select(it => SnailfishNumber.From(it))
+      .Aggregate((a, b) =>
+      {
+        var result = a.Add(b);
+        return result;
+      })
+      .Magnitude().Should().Be(expected);
+  }
+
+  [Theory]
   [InlineData("Day18.Sample.1", "[[[[1,1],[2,2]],[3,3]],[4,4]]")]
   [InlineData("Day18.Sample.2", "[[[[3,0],[5,3]],[4,4]],[5,5]]")]
   [InlineData("Day18.Sample.3", "[[[[5,0],[7,4]],[5,5]],[6,6]]")]
@@ -57,12 +71,57 @@ public partial class Day18
       .Reduce().ToString().Should().Be("[[[[4,0],[5,4]],[[7,7],[6,0]]],[[8,[7,7]],[[7,9],[5,0]]]]");
   }
 
+  [Theory]
+  [InlineData("[9,1]", 29)]
+  [InlineData("[1,9]", 21)]
+  [InlineData("[[9,1],[1,9]]", 129)]
+  [InlineData("[[1,2],[[3,4],5]]", 143)]
+  [InlineData("[[[[0,7],4],[[7,8],[6,0]]],[8,1]]", 1384)]
+  [InlineData("[[[[1,1],[2,2]],[3,3]],[4,4]]", 445)]
+  [InlineData("[[[[3,0],[5,3]],[4,4]],[5,5]]", 791)]
+  [InlineData("[[[[5,0],[7,4]],[5,5]],[6,6]]", 1137)]
+  [InlineData("[[[[8,7],[7,7]],[[8,6],[7,7]]],[[[0,7],[6,6]],[8,7]]]", 3488)]
+  public void MagnitudeTests(string input, long expected)
+  {
+    SnailfishNumber.From(input).Magnitude().Should().Be(expected);
+  }
+
   enum Kind { Open, Close, Literal };
 
-  record SnItem(Kind Kind, int Literal);
+  record SnItem(Kind Kind, long Literal);
 
   record SnailfishNumber(LinkedList<SnItem> Trail)
   {
+    public long Magnitude()
+    {
+      LinkedList<SnItem> copy = [];
+      foreach(var item in Trail) copy.AddLast(new SnItem(item.Kind, item.Literal));
+      
+      while (copy.Count > 1)
+      {
+        var current = copy.First;
+        while (current != null)
+        {
+          var next = current.Next;
+          if (next != null && current.Value.Kind == Kind.Literal && next.Value.Kind == Kind.Literal)
+          {
+            var open = current.Previous!;
+            var close = next.Next!;
+            copy.AddAfter(current, new SnItem(Kind.Literal, current.Value.Literal * 3 + next.Value.Literal * 2));
+            copy.Remove(open);
+            copy.Remove(current);
+            current = close.Next;
+            copy.Remove(next);
+            copy.Remove(close);
+          } else {
+            current = next;
+          }
+        }
+      }
+
+      return copy.First!.Value.Literal;
+    }
+
     public override string ToString()
     {
       string result = "";
