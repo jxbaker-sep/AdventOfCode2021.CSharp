@@ -1,23 +1,26 @@
-using System.Security.Cryptography;
-using System.Text.RegularExpressions;
 using AdventOfCode2021.CSharp.Utils;
 using FluentAssertions;
 using Parser;
-using Utils;
-using Xunit.Abstractions;
-using P = Parser.ParserBuiltins;
 
 namespace AdventOfCode2021.CSharp;
 
 public partial class Day18
 {
-  // [Theory]
-  // [InlineData("Day18.Sample", 45)]
-  // [InlineData("Day18", 8911)]
-  // public void Part1(string file, long expected)
-  // {
-    
-  // }
+  [Theory]
+  [InlineData("Day18.Sample.1", "[[[[1,1],[2,2]],[3,3]],[4,4]]")]
+  [InlineData("Day18.Sample.2", "[[[[3,0],[5,3]],[4,4]],[5,5]]")]
+  [InlineData("Day18.Sample.3", "[[[[5,0],[7,4]],[5,5]],[6,6]]")]
+  [InlineData("Day18.Sample.4", "[[[[8,7],[7,7]],[[8,6],[7,7]]],[[[0,7],[6,6]],[8,7]]]")]
+  public void Samples(string file, string expected)
+  {
+    AoCLoader.LoadLines(file).Select(it => SnailfishNumber.From(it))
+      .Aggregate((a, b) =>
+      {
+        var result = a.Add(b);
+        return result;
+      })
+      .ToString().Should().Be(expected);
+  }
 
   [Theory]
   [InlineData("[1,2]")]
@@ -38,6 +41,20 @@ public partial class Day18
   public void ExplodeTest(string input, string expected)
   {
     SnailfishNumber.From(input).Reduce1().ToString().Should().Be(expected);
+  }
+
+  [Fact]
+  public void Sanity()
+  {
+    SnailfishNumber.From("[[[[4,3],4],4],[7,[[8,4],9]]]").Add(SnailfishNumber.From("[1,1]"))
+      .Reduce().ToString().Should().Be("[[[[0,7],4],[[7,8],[6,0]]],[8,1]]");
+  }
+
+  [Fact]
+  public void Sanity2()
+  {
+    SnailfishNumber.From("[[[0,[4,5]],[0,0]],[[[4,5],[2,6]],[9,5]]]").Add(SnailfishNumber.From("[7,[[[3,7],[4,3]],[[6,3],[8,8]]]]"))
+      .Reduce().ToString().Should().Be("[[[[4,0],[5,4]],[[7,7],[6,0]]],[[8,[7,7]],[[7,9],[5,0]]]]");
   }
 
   enum Kind { Open, Close, Literal };
@@ -80,7 +97,19 @@ public partial class Day18
       foreach(var item in Trail) result.AddLast(item);
       foreach(var item in rhs.Trail) result.AddLast(item);
       result.AddLast(new SnItem(Kind.Close, 0));
-      return new(result);
+      return new SnailfishNumber(result).Reduce();
+    }
+
+    public SnailfishNumber Reduce()
+    {
+      var original = ToString();
+      while (true)
+      {
+        Reduce1();
+        if (original == ToString()) break;
+        original = ToString();
+      }
+      return this;
     }
     
     public SnailfishNumber Reduce1()
@@ -89,14 +118,14 @@ public partial class Day18
       foreach(var item in Trail.Nodes())
       {
         if (item.Value.Kind == Kind.Close) depth -= 1;
-        if (item.Value.Kind == Kind.Open) {
+        else if (item.Value.Kind == Kind.Open) {
           depth += 1;
-          if (depth >= 4)
-          {
-            Explode(item);
-            return this;
-          }
+          if (depth >= 4) return Explode(item);
         }
+      }
+      foreach(var item in Trail.Nodes())
+      {
+        if (item.Value.Kind == Kind.Literal && item.Value.Literal >= 10) return Split(item);
       }
       return this;
     }
@@ -106,6 +135,7 @@ public partial class Day18
       var lhs = open.Next!;
       var rhs = lhs.Next!;
       var close = rhs.Next!;
+      open.Value.Kind.Should().Be(Kind.Open);
       lhs.Value.Kind.Should().Be(Kind.Literal);
       rhs.Value.Kind.Should().Be(Kind.Literal);
       close.Value.Kind.Should().Be(Kind.Close);
@@ -125,6 +155,16 @@ public partial class Day18
       Trail.Remove(rhs);
       Trail.Remove(close);
 
+      return this;
+    }
+
+    private SnailfishNumber Split(LinkedListNode<SnItem> open)
+    {
+      Trail.AddBefore(open, new SnItem(Kind.Open, 0));
+      Trail.AddBefore(open, new SnItem(Kind.Literal, open.Value.Literal / 2));
+      Trail.AddBefore(open, new SnItem(Kind.Literal, open.Value.Literal / 2 + (open.Value.Literal % 2)));
+      Trail.AddBefore(open, new SnItem(Kind.Close, 0));
+      Trail.Remove(open);
       return this;
     }
   }
