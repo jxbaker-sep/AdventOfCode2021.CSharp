@@ -1,6 +1,7 @@
 using AdventOfCode2021.CSharp.Utils;
 using FluentAssertions;
 using Parser;
+using Utils;
 
 namespace AdventOfCode2021.CSharp;
 
@@ -8,7 +9,7 @@ public partial class Day18
 {
   [Theory]
   [InlineData("Day18.Sample.5", 4140)]
-  [InlineData("Day18", 0)]
+  [InlineData("Day18", 3665)]
   public void Part1(string file, long expected)
   {
     AoCLoader.LoadLines(file).Select(it => SnailfishNumber.From(it))
@@ -18,6 +19,20 @@ public partial class Day18
         return result;
       })
       .Magnitude().Should().Be(expected);
+  }
+  
+  [Theory]
+  [InlineData("Day18.Sample.5", 3993)]
+  [InlineData("Day18", 4775)]
+  public void Part2(string file, long expected)
+  {
+    AoCLoader.LoadLines(file).Select(it => SnailfishNumber.From(it))
+      .ToList()
+      .Pairs()
+      .SelectMany(a => new []{a.First.Add(a.Second), a.Second.Add(a.First)})
+      .Select(it => it.Magnitude())
+      .Max()
+      .Should().Be(expected);
   }
 
   [Theory]
