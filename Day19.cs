@@ -3,6 +3,7 @@ using AdventOfCode2021.CSharp.Utils;
 using FluentAssertions;
 using Parser;
 using Utils;
+using Xunit.Sdk;
 using P = Parser.ParserBuiltins;
 
 namespace AdventOfCode2021.CSharp;
@@ -10,9 +11,9 @@ namespace AdventOfCode2021.CSharp;
 public partial class Day19
 {
   [Theory]
-  [InlineData("Day19.Sample", 79)]
-  [InlineData("Day19", 419)]
-  public void Part1(string file, int expected)
+  [InlineData("Day19.Sample", 79, 3621)]
+  [InlineData("Day19", 419, 13210)]
+  public void Part1(string file, int expected, long expected2)
   {
     var scanners = Parse(AoCLoader.LoadFile(file));
     while (scanners.Count > 1)
@@ -26,6 +27,7 @@ public partial class Day19
         if (overlap2 is { } overlap)
         {
           var points = new HashSet<Point3>([.. scanners[i].Points, .. overlap.Points]);
+          scanners[i].ScannerLocations.AddRange(scanners[j].ScannerLocations.Select(p => p.Apply(overlap.Translation)));
           scanners[i].Points.Clear();
           scanners[i].Points.AddRange(points);
           scanners.RemoveAt(j);
@@ -40,7 +42,9 @@ public partial class Day19
       }
     }
 
-    scanners.SelectMany(it => it.Points).Count().Should().Be(expected);
+    scanners.Count.Should().Be(1);
+    scanners[0].Points.Count.Should().Be(expected);
+    scanners[0].ScannerLocations.Pairs().Select(it => it.First.ManhattanDistance(it.Second)).Max().Should().Be(expected2);
   }
 
   [Theory]
@@ -51,24 +55,6 @@ public partial class Day19
     var overlap2 = FindOverlap(scanners[0], scanners[1], 12);
 
     overlap2.Should().NotBeNull();
-  }
-
-  [Fact]
-  public void Sanity()
-  {
-    var scanners = Parse(@"--- scanner 0 ---
-0,2,0
-4,1,0
-3,3,0
-
---- scanner 1 ---
--1,-1,0
--5,0,0
--2,1,0");
-
-    var overlap = FindOverlap(scanners[0], scanners[1], 3) ?? throw new ApplicationException();
-    overlap.Points.Should().HaveCount(3);
-    overlap.ScannerLocation.Should().Be(new Point3(5, 2, 0));
   }
 
   [Fact]
@@ -101,6 +87,7 @@ public partial class Day19
 
   record Point3(long X, long Y, long Z)
   {
+    public long ManhattanDistance(Point3 other) => Math.Abs(X - other.X) + Math.Abs(Y - other.Y) + Math.Abs(Z - other.Z);
     public Point3 Orient(Orientation orient)
     {
       var result = this;
@@ -129,14 +116,14 @@ public partial class Day19
     public static Point3 operator -(Point3 lhs, Point3 rhs) => new(lhs.X - rhs.X, lhs.Y - rhs.Y, lhs.Z - rhs.Z);
     public static Point3 operator +(Point3 lhs, Point3 rhs) => new(lhs.X + rhs.X, lhs.Y + rhs.Y, lhs.Z + rhs.Z);
   }
-  record Scanner(List<Point3> Points);
+  record Scanner(List<Point3> Points, List<Point3> ScannerLocations);
 
   enum Roll { X, Y, Z };
   record Orientation(Roll Roll, int Rotations, bool Flipped);
   record Translation(Orientation Orientation, Point3 Delta);
 
   // returns translated list of points of at least minOverlap overlap
-  static (Point3 ScannerLocation, List<Point3> Points)? FindOverlap(Scanner lhs, Scanner rhs, int minOverlap)
+  static (Translation Translation, List<Point3> Points)? FindOverlap(Scanner lhs, Scanner rhs, int minOverlap)
   {
     foreach (var roll in new[] { Roll.X, Roll.Y, Roll.Z })
     {
@@ -156,7 +143,8 @@ public partial class Day19
               if (v >= minOverlap)
               {
                 Translation translation = new(orientation, delta);
-                return (new Point3(0, 0, 0).Apply(translation), translated);
+                // return (new Point3(0, 0, 0).Apply(translation), translated);
+                return (translation, translated);
               }
             }
           }
@@ -170,14 +158,14 @@ public partial class Day19
   static List<Scanner> Parse(string s)
   {
     List<Scanner> result = [];
-    Scanner scanner = new(new());
+    Scanner scanner = new([], [new(0,0,0)]);
     var pointMatcher = P.Format("{},{},{}", P.Long, P.Long, P.Long)
       .Select(it => new Point3(it.First, it.Second, it.Third));
     foreach (var line in s.Lines())
     {
       if (line.StartsWith("--- scanner"))
       {
-        scanner = new(new());
+        scanner = new([], [new(0,0,0)]);
         result.Add(scanner);
       }
       else if (!string.IsNullOrEmpty(line))
