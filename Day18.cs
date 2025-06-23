@@ -122,12 +122,12 @@ public partial class Day18
           {
             var open = current.Previous!;
             var close = next.Next!;
-            copy.AddAfter(current, new SnItem(Kind.Literal, current.Value.Literal * 3 + next.Value.Literal * 2));
+            var zn = copy.AddAfter(current, new SnItem(Kind.Literal, current.Value.Literal * 3 + next.Value.Literal * 2));
             copy.Remove(open);
             copy.Remove(current);
-            current = close.Next;
             copy.Remove(next);
             copy.Remove(close);
+            current = zn.Previous;
           } else {
             current = next;
           }
