@@ -19,6 +19,17 @@ public partial class Day20
     world.Enhance(false).Enhance(true).Image.Count(it => it.Value == Pixel.Bright).Should().Be(expected);
   }
 
+  [Theory]
+  [InlineData("Day20.Sample", 3351)]
+  [InlineData("Day20", 19066)]
+  public void Part2(string file, int expected)
+  {
+    var world = Parse(AoCLoader.LoadFile(file));
+    for (var index = 0; index < 50; index ++)
+      world = world.Enhance(index % 2 == 1);
+    world.Image.Count(it => it.Value == Pixel.Bright).Should().Be(expected);
+  }
+
   public enum Pixel { Dark, Bright };
 
   public record World(List<Pixel> Enhancement, Dictionary<Point, Pixel> Image)
