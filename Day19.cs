@@ -139,11 +139,10 @@ public partial class Day19
             {
               var delta = other - point;
               var translated = oriented.Select(p => p + delta).ToList();
-              int v = lhs.Points.Intersect(translated).Count();
+              int v = lhs.Points.Intersect(translated).Take(minOverlap).Count();
               if (v >= minOverlap)
               {
                 Translation translation = new(orientation, delta);
-                // return (new Point3(0, 0, 0).Apply(translation), translated);
                 return (translation, translated);
               }
             }
