@@ -5,7 +5,7 @@ using Utils;
 
 namespace AdventOfCode2021.CSharp;
 
-public partial class Day18
+public class Day18
 {
   [Theory]
   [InlineData("Day18.Sample.5", 4140)]

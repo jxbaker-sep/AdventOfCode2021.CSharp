@@ -8,7 +8,7 @@ using P = Parser.ParserBuiltins;
 
 namespace AdventOfCode2021.CSharp;
 
-public partial class Day19
+public class Day19
 {
   [Theory]
   [InlineData("Day19.Sample", 79, 3621)]
