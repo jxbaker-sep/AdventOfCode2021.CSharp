@@ -36,6 +36,53 @@ public partial class Day21
   }
 
   [Theory]
+  [InlineData(4, 8, 444356092776315)]
+  [InlineData(2, 5, 131888061854776)]
+  public void Part2(long p1, long p2, long expected)
+  {
+    CountWins(p1, p2, 0, 0, 0).Max().Should().Be(expected);
+  }
+
+  Dictionary<(long p1, long p2, long score1, long score2, int which), List<long>> Cache = [];
+  List<long> CountWins(long p1, long p2, long score1, long score2, int which)
+  {
+    var key = (p1, p2, score1, score2, which);
+    if (Cache.TryGetValue(key, out var needle)) return needle;
+    List<long> wins = [0, 0];
+    foreach (var i in new[] { 1, 2, 3 })
+    {
+      foreach (var j in new[] { 1, 2, 3 })
+      {
+        foreach (var k in new[] { 1, 2, 3 })
+        {
+          var nextPos = which == 0 ? p1 : p2;
+          nextPos = (nextPos + (i + j + k)) % 10;
+          if (nextPos == 0) nextPos = 10;
+          var nextScore = which == 0 ? score1 : score2;
+          nextScore += nextPos;
+          if (nextScore >= 21)
+          {
+            wins[which] += 1;
+          }
+          else
+          {
+            var recursive = CountWins(
+              which == 0 ? nextPos : p1, 
+              which == 1 ? nextPos : p2, 
+              which == 0 ? nextScore : score1, 
+              which == 1 ? nextScore : score2, 
+              (which + 1) % 2);
+            wins[0] += recursive[0];
+            wins[1] += recursive[1];
+          }
+        }
+      }
+    }
+    Cache[key] = wins;
+    return wins;
+  }
+
+  [Theory]
   [InlineData(4, 6, 25, 26)]
   [InlineData(4, 6, 999, 1000)]
   [InlineData(4, 6, 1000, 1000)]
