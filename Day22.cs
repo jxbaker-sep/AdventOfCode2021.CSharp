@@ -26,6 +26,18 @@ public class Day22
     regions.Sum(r => r.Size).Should().Be(expected);
   }
 
+  [Theory]
+  [InlineData("Day22.Sample.3", 2758514936282235)]
+  [InlineData("Day22", 1285677377848549)]
+  public void Part2(string file, long expected)
+  {
+    var data = Parse(AoCLoader.LoadLines(file));
+
+    var regions = data.Aggregate(new List<Region>(), (acc, it) => Operate(it, acc));
+
+    regions.Sum(r => r.Size).Should().Be(expected);
+  }
+
   private static List<Region> Operate(Instruction instruction, List<Region> regions)
   {
     var result = regions.SelectMany(it => it.Slice(instruction.Region)).ToList();
