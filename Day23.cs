@@ -1,5 +1,6 @@
 using AdventOfCode2021.CSharp.Utils;
 using FluentAssertions;
+using Microsoft.Z3;
 using Parser;
 using Utils;
 using P = Parser.ParserBuiltins;
@@ -16,8 +17,8 @@ public class Day23
   const long DCost = 1000;
 
   [Theory]
-  // [InlineData("BACDBCDA", 12521)]
-  [InlineData("BCBADADC", 10607)]
+  [InlineData("BACDBCDA", 12521)]
+  // [InlineData("BCBADADC", 10607)]
   public void Part1(string amphipods, long expected)
   {
     Dictionary<Point, char> world = [];
@@ -45,11 +46,11 @@ public class Day23
     world[new(8, 1)] = amphipods[6];
     world[new(8, 2)] = amphipods[7];
 
-    Go(world).Should().Be(expected);
+    Go(world, 2).Should().Be(expected);
   }
 
 
-  long Go(Dictionary<Point, char> start)
+  long Go(Dictionary<Point, char> start, long depth)
   {
     List<Point> spaces = start.Keys.ToList();
     List<Point> taboo = [new(2, 0), new(4, 0), new(6, 0), new(8, 0)];
@@ -62,11 +63,14 @@ public class Day23
 
     bool AtGoal(Dictionary<Point, char> world)
     {
-      return 
-        world[new(2, 1)] == 'A' && world[new(2, 2)] == 'A' &&
-        world[new(4, 1)] == 'B' && world[new(4, 2)] == 'B' &&
-        world[new(6, 1)] == 'C' && world[new(6, 2)] == 'C' &&
-        world[new(8, 1)] == 'D' && world[new(8, 2)] == 'D';
+      foreach(var (amphipod, (space, _)) in lookup)
+      {
+        for (int i = 1; i <= depth; i++)
+        {
+          if (world[new(space, i)] != amphipod) return false;
+        }
+      }
+      return true;
     }
 
     long Estimation(Dictionary<Point, char> world)
@@ -75,9 +79,20 @@ public class Day23
       foreach (var (amphipod, (space, cost)) in lookup)
       {
         var amphipods = world.Where(it => it.Value == amphipod).Select(item => item.Key).ToList();
-        foreach(var it in amphipods) {
-          if (it.X == space) continue;
-          estimate += cost * (it.ManhattanDistance(new(it.X, 0)) + new Point(it.X, 0).ManhattanDistance(new(space, 1)));
+        var deepestOutOfPlace = depth;
+        for (; deepestOutOfPlace > 0; deepestOutOfPlace--) { 
+          if (new[]{Empty, amphipod}.Contains(world[new(space, deepestOutOfPlace)])) break;
+        }
+        foreach(var it in amphipods) 
+        {
+          if (it.X != space)
+          {
+            estimate += cost * (it.Y + new Point(it.X, 0).ManhattanDistance(new(space, 1)));
+          }
+          else if (it.Y < deepestOutOfPlace)
+          {
+            estimate += 2 * cost * (it.Y + 1);
+          }
         }
       }
       return estimate;
@@ -90,20 +105,22 @@ public class Day23
     while (open.TryDequeue(out var current))
     {
       // Console.WriteLine($"{current.Energy}, {current.Energy + Estimation(current.World)}");
-      foreach (var (amphipod, (goalRoom, energyCostPerStep)) in lookup)
+      foreach (var (amphipod, (space, energyCostPerStep)) in lookup)
       {
+        var deepestOutOfPlace = depth;
+        for (; deepestOutOfPlace > 0; deepestOutOfPlace--) { 
+          if (!new[]{Empty, amphipod}.Contains(current.World[new(space, deepestOutOfPlace)])) break;
+        }
         foreach (var currentPosition in current.World.Where(it => it.Value == amphipod).Select(it => it.Key))
         {
           // amphipods in completed home spaces do not move
-          if (currentPosition.X == goalRoom && currentPosition.Y == 2) continue;
-          if (currentPosition.X == goalRoom && current.World[new(goalRoom, 2)] == amphipod) continue;
+          if (currentPosition.X == space && currentPosition.Y > deepestOutOfPlace) continue;
           var openSpaces = FindAllOpenSpaces(current.World, currentPosition).ToList();
           // don't bother opening any other space if I can immediately go home
-          var homespaces = openSpaces.Where(it => it.Point.X == goalRoom && it.Point.Y > 0).ToList();
-          if (homespaces.Count > 0 && new[]{amphipod, Empty}.Contains(current.World[new(goalRoom, 2)]))
+          var homespaces = openSpaces.Where(it => it.Point.X == space && it.Point.Y > 0).ToList();
+          if (homespaces.Count > 0 && deepestOutOfPlace == 0)
           {
-            var nextPosition = homespaces[0];
-            if (homespaces.Count == 2) nextPosition = homespaces.Single(it => it.Point.Y == 2);
+            var nextPosition = homespaces.MaxBy(it => it.Point.Y);
             var nextWorld = current.World.Clone();
             nextWorld[currentPosition] = '.';
             nextWorld[nextPosition.Point] = amphipod;
