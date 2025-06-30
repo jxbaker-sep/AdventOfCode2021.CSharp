@@ -18,7 +18,7 @@ public class Day23
 
   [Theory]
   [InlineData("BACDBCDA", 12521)]
-  // [InlineData("BCBADADC", 10607)]
+  [InlineData("BCBADADC", 10607)]
   public void Part1(string amphipods, long expected)
   {
     Dictionary<Point, char> world = [];
@@ -47,6 +47,47 @@ public class Day23
     world[new(8, 2)] = amphipods[7];
 
     Go(world, 2).Should().Be(expected);
+  }
+
+  [Theory]
+  [InlineData("BACDBCDA", 44169)]
+  [InlineData("BCBADADC", 59071)]
+  public void Part2(string amphipods, long expected)
+  {
+    Dictionary<Point, char> world = [];
+    world[new(0, 0)] = Empty;
+    world[new(1, 0)] = Empty;
+    world[new(2, 0)] = Empty;
+    world[new(3, 0)] = Empty;
+    world[new(4, 0)] = Empty;
+    world[new(5, 0)] = Empty;
+    world[new(6, 0)] = Empty;
+    world[new(7, 0)] = Empty;
+    world[new(8, 0)] = Empty;
+    world[new(9, 0)] = Empty;
+    world[new(10, 0)] = Empty;
+
+    world[new(2, 1)] = amphipods[0];
+    world[new(2, 2)] = 'D';
+    world[new(2, 3)] = 'D';
+    world[new(2, 4)] = amphipods[1];
+
+    world[new(4, 1)] = amphipods[2];
+    world[new(4, 2)] = 'C';
+    world[new(4, 3)] = 'B';
+    world[new(4, 4)] = amphipods[3];
+
+    world[new(6, 1)] = amphipods[4];
+    world[new(6, 2)] = 'B';
+    world[new(6, 3)] = 'A';
+    world[new(6, 4)] = amphipods[5];
+
+    world[new(8, 1)] = amphipods[6];
+    world[new(8, 2)] = 'A';
+    world[new(8, 3)] = 'C';
+    world[new(8, 4)] = amphipods[7];
+
+    Go(world, 4).Should().Be(expected);
   }
 
 
@@ -100,7 +141,38 @@ public class Day23
 
     PriorityQueue<(Dictionary<Point, char> World, long Energy)> open = new(it => it.Energy + Estimation(it.World));
 
+    string GetKey(Dictionary<Point, char> world)
+    {
+      string result = "";
+      for (var x = 0; x <= 10; x++)
+      {
+        for (var y = 0; y <= depth; y++)
+        {
+          if (world.TryGetValue(new(x,y), out var zed))
+          {
+            result += zed;
+          }
+        }
+      }
+      return result;
+    }
+
+    Dictionary<string, long> closed = [];
     open.Enqueue((start, 0));
+    closed[GetKey(start)] = 0;
+
+    bool TryEnqueue(Dictionary<Point, char> world, Point currentPosition, Point nextPosition, long energy)
+    {
+      var nextWorld = world.Clone();
+      nextWorld[currentPosition] = '.';
+      nextWorld[nextPosition] = world[currentPosition];
+      var key = GetKey(nextWorld);
+      if (closed.TryGetValue(key, out var existing) && existing <= energy) return false;
+      if (AtGoal(nextWorld)) return true;
+      closed[key] = energy;
+      open.Enqueue((nextWorld, energy));
+      return false;
+    }
 
     while (open.TryDequeue(out var current))
     {
@@ -121,12 +193,9 @@ public class Day23
           if (homespaces.Count > 0 && deepestOutOfPlace == 0)
           {
             var nextPosition = homespaces.MaxBy(it => it.Point.Y);
-            var nextWorld = current.World.Clone();
-            nextWorld[currentPosition] = '.';
-            nextWorld[nextPosition.Point] = amphipod;
             var nextEnergy = current.Energy + energyCostPerStep * nextPosition.Distance;
-            if (AtGoal(nextWorld)) return nextEnergy;
-            open.Enqueue((nextWorld, nextEnergy));
+
+            if (TryEnqueue(current.World, currentPosition, nextPosition.Point, nextEnergy)) return nextEnergy;
             continue;
           }
           foreach (var (nextPosition, steps) in openSpaces)
@@ -138,12 +207,9 @@ public class Day23
             // Can't go into any room (checked if we can go home above)
             if (nextPosition.Y > 0) continue;
 
-            var nextWorld = current.World.Clone();
-            nextWorld[currentPosition] = '.';
-            nextWorld[nextPosition] = amphipod;
             var nextEnergy = current.Energy + energyCostPerStep * steps;
-            if (AtGoal(nextWorld)) return nextEnergy;
-            open.Enqueue((nextWorld, nextEnergy));
+
+            if (TryEnqueue(current.World, currentPosition, nextPosition, nextEnergy)) return nextEnergy;
           }
         }
       }
@@ -161,8 +227,8 @@ public class Day23
       foreach (var neighbor in current.Point.CardinalNeighbors())
       {
         if (closed.Contains(neighbor)) continue;
-        if (!world.TryGetValue(neighbor, out var neighborSpace)) continue;
-        if (neighborSpace == Empty)
+        if (!world.TryGetValue(neighbor, out var neighborValue)) continue;
+        if (neighborValue == Empty)
         {
           closed.Add(neighbor);
           open.Enqueue((neighbor, current.Distance + 1));
