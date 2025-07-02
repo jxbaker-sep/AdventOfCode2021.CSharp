@@ -1,8 +1,5 @@
-using System.Reflection.Metadata.Ecma335;
-using System.Reflection.PortableExecutable;
 using AdventOfCode2021.CSharp.Utils;
 using FluentAssertions;
-using Microsoft.Z3;
 using Parser;
 using Utils;
 using P = Parser.ParserBuiltins;
@@ -34,21 +31,12 @@ public class Day24
 
   long? Search(List<long> range, IReadOnlyList<Coefficients> data, int index, long input_z, long previous)
   {
+    if (index == 14) return input_z == 0 ? previous : null;
     var key = (index, input_z);
     if (Cache.TryGetValue(key, out var found)) return found;
     foreach (var proposed in range)
     {
       var z = Operate(proposed, data[index], input_z);
-
-      if (index == 13)
-      {
-        if (z == 0) {
-          Cache[key] = previous * 10 + proposed;
-          return previous * 10 + proposed;
-        }
-        continue;
-      }
-
       var next = Search(range, data, index + 1, z, previous * 10 + proposed);
       if (next == null) continue;
       Cache[key] = next;
@@ -57,7 +45,7 @@ public class Day24
     Cache[key] = null;
     return null;
   }
-  
+
   static long Operate(long input, Coefficients coeff, long z)
   {
     var w = input;
