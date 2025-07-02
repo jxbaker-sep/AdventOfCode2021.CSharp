@@ -18,7 +18,7 @@ public class Day24
   {
     var data = Parse(AoCLoader.LoadLines(filename));
 
-    Highest(data, 0, 0, 0).Should().Be(expected);
+    Search(MiscUtils.InclusiveRange(1, 9).Reverse().ToList(), data, 0, 0, 0).Should().Be(expected);
   }
 
   [Theory]
@@ -27,62 +27,37 @@ public class Day24
   {
     var data = Parse(AoCLoader.LoadLines(filename));
 
-    Smallest(data, 0, 0, 0).Should().Be(expected);
+    Search(MiscUtils.InclusiveRange(1, 9).ToList(), data, 0, 0, 0).Should().Be(expected);
   }
 
   readonly Dictionary<(int, long), long?> Cache = [];
 
-  long? Highest(IReadOnlyList<Coefficients> data, int index, long input_z, long previous)
+  long? Search(List<long> range, IReadOnlyList<Coefficients> data, int index, long input_z, long previous)
   {
-    if (Cache.TryGetValue((index, input_z), out var found)) return found;
-    for (var proposed = 9; proposed > 0; proposed--)
+    var key = (index, input_z);
+    if (Cache.TryGetValue(key, out var found)) return found;
+    foreach (var proposed in range)
     {
       var z = Operate(proposed, data[index], input_z);
 
       if (index == 13)
       {
         if (z == 0) {
-          Cache[(index, input_z)] = previous * 10 + proposed;
+          Cache[key] = previous * 10 + proposed;
           return previous * 10 + proposed;
         }
         continue;
       }
 
-      var next = Highest(data, index + 1, z, previous * 10 + proposed);
+      var next = Search(range, data, index + 1, z, previous * 10 + proposed);
       if (next == null) continue;
-      Cache[(index, input_z)] = next;
+      Cache[key] = next;
       return next;
     }
-    Cache[(index, input_z)] = null;
+    Cache[key] = null;
     return null;
   }
-
-  long? Smallest(IReadOnlyList<Coefficients> data, int index, long input_z, long previous)
-  {
-    if (Cache.TryGetValue((index, input_z), out var found)) return found;
-    for (var proposed = 1; proposed <= 9; proposed++)
-    {
-      var z = Operate(proposed, data[index], input_z);
-
-      if (index == 13)
-      {
-        if (z == 0) {
-          Cache[(index, input_z)] = previous * 10 + proposed;
-          return previous * 10 + proposed;
-        }
-        continue;
-      }
-
-      var next = Smallest(data, index + 1, z, previous * 10 + proposed);
-      if (next == null) continue;
-      Cache[(index, input_z)] = next;
-      return next;
-    }
-    Cache[(index, input_z)] = null;
-    return null;
-  }
-
-
+  
   static long Operate(long input, Coefficients coeff, long z)
   {
     var w = input;
