@@ -161,7 +161,7 @@ public class Day23
     open.Enqueue((start, 0));
     closed[GetKey(start)] = 0;
 
-    bool TryEnqueue(Dictionary<Point, char> world, Point currentPosition, Point nextPosition, long energy)
+    bool AtGoalOrEnqueue(Dictionary<Point, char> world, Point currentPosition, Point nextPosition, long energy)
     {
       var nextWorld = world.Clone();
       nextWorld[currentPosition] = '.';
@@ -176,6 +176,7 @@ public class Day23
 
     while (open.TryDequeue(out var current))
     {
+      if (closed.TryGetValue(GetKey(current.World), out var existing) && existing < current.Energy) continue;
       // Console.WriteLine($"{current.Energy}, {current.Energy + Estimation(current.World)}");
       foreach (var (amphipod, (space, energyCostPerStep)) in lookup)
       {
@@ -195,7 +196,7 @@ public class Day23
             var nextPosition = homespaces.MaxBy(it => it.Point.Y);
             var nextEnergy = current.Energy + energyCostPerStep * nextPosition.Distance;
 
-            if (TryEnqueue(current.World, currentPosition, nextPosition.Point, nextEnergy)) return nextEnergy;
+            if (AtGoalOrEnqueue(current.World, currentPosition, nextPosition.Point, nextEnergy)) return nextEnergy;
             continue;
           }
           foreach (var (nextPosition, steps) in openSpaces)
@@ -209,7 +210,7 @@ public class Day23
 
             var nextEnergy = current.Energy + energyCostPerStep * steps;
 
-            if (TryEnqueue(current.World, currentPosition, nextPosition, nextEnergy)) return nextEnergy;
+            if (AtGoalOrEnqueue(current.World, currentPosition, nextPosition, nextEnergy)) return nextEnergy;
           }
         }
       }
